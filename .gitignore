@@ -1,0 +1,5 @@
+node_modules
+dist
+# seus dados financeiros ficam só no seu PC
+dados
+/dados
