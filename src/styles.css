@@ -7313,3 +7313,262 @@ textarea.input {
     animation: none;
   }
 }
+
+/* Minhas ações (lucro e prejuízo) ------------------------------------------- */
+
+.bolsa-grid > .stocks-sheet {
+  --d: 1;
+}
+
+[data-tone='good'].pos-result,
+.pos-sub[data-tone='good'],
+.stocks-kpis dd[data-tone='good'],
+.fin-kv dd[data-tone='good'],
+.form-hint strong[data-tone='good'] {
+  color: var(--good-ink);
+}
+[data-tone='bad'].pos-result,
+.pos-sub[data-tone='bad'],
+.stocks-kpis dd[data-tone='bad'],
+.fin-kv dd[data-tone='bad'],
+.form-hint strong[data-tone='bad'] {
+  color: var(--bad-ink);
+}
+
+.stocks-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+.stocks-kpis > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+.stocks-kpis dt {
+  color: var(--ink-3);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+.stocks-kpis dd {
+  margin: 0;
+  font-size: var(--fs-xl);
+  font-weight: 650;
+  font-stretch: var(--narrow);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+.stocks-kpis .fin-kv-sub {
+  text-align: left;
+}
+.stocks-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: -6px;
+  color: var(--ink-3);
+  font-size: var(--fs-xs);
+}
+.stocks-empty {
+  padding: 14px 16px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 12px;
+  color: var(--ink-2);
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+}
+
+.pos-list {
+  display: flex;
+  flex-direction: column;
+}
+.pos-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) repeat(5, minmax(0, 1fr));
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font-size: var(--fs-sm);
+  text-align: left;
+  transition: background-color 0.15s;
+}
+button.pos-row:hover {
+  border-radius: 10px;
+  background: var(--surface-2);
+}
+.pos-head {
+  padding-block: 6px;
+  border-top: 0;
+  color: var(--ink-3);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+.pos-head > span:not(:first-child),
+.pos-num {
+  text-align: right;
+}
+.pos-row[data-closed] {
+  color: var(--ink-3);
+}
+.pos-id {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.pos-id strong {
+  color: var(--ink);
+  font-size: var(--fs-md);
+  font-weight: 650;
+}
+.pos-id span {
+  overflow: hidden;
+  color: var(--ink-3);
+  font-size: var(--fs-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pos-num {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.pos-sub {
+  color: var(--ink-3);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+}
+
+/* Gaveta */
+.op-ticker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-ctl);
+  background: var(--surface-2);
+  font-size: var(--fs-sm);
+}
+.op-results {
+  max-height: 220px;
+  margin-top: 4px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-ctl);
+}
+.field-link {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent-ink);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  text-align: left;
+}
+.field-link:hover {
+  text-decoration: underline;
+}
+.trade-hist-title {
+  margin-bottom: -12px;
+}
+.trade-hist {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.trade-hist li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-top: 1px solid var(--line);
+}
+.trade-hist li:first-child {
+  border-top: 0;
+}
+.trade-op {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 10px 8px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: inherit;
+  font-size: var(--fs-sm);
+  text-align: left;
+}
+.trade-op:hover {
+  background: var(--surface-2);
+}
+.trade-kind {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 650;
+}
+.trade-kind[data-kind='compra'] {
+  color: var(--good-ink);
+}
+.trade-kind[data-kind='venda'] {
+  color: var(--accent-ink);
+}
+.trade-what {
+  display: flex;
+  flex-direction: column;
+  font-variant-numeric: tabular-nums;
+}
+.trade-date {
+  color: var(--ink-3);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .pos-head {
+    display: none;
+  }
+  .pos-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 4px 12px;
+  }
+  .pos-row > .pos-num {
+    display: none;
+  }
+  .pos-row > .pos-result,
+  .pos-row > .pos-num[data-label='Valor hoje'] {
+    display: flex;
+  }
+  .pos-row > .pos-num[data-label='Valor hoje'] {
+    grid-column: 1;
+    grid-row: 2;
+    flex-direction: row;
+    gap: 6px;
+    text-align: left;
+    font-weight: 500;
+    color: var(--ink-2);
+  }
+  .pos-row > .pos-result {
+    grid-column: 2;
+    grid-row: 1 / 3;
+  }
+}

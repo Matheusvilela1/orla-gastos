@@ -23,7 +23,7 @@ import {
   X,
   type LucideIcon,
 } from 'lucide-react';
-import { fmt, fmtDate } from '../lib/format';
+import { fmt, fmtDate, parseNum } from '../lib/format';
 import { formatBRLInput, isoDate, monthKeyOf, monthLabel, monthShort, parseBRL, parseIso } from '../lib/finance';
 import { useFinance } from '../lib/financeStore';
 import { copyText, storage, useBodyLock, useCountUp, useFocusTrap, useReducedMotion } from '../lib/hooks';
@@ -58,27 +58,14 @@ import { useToast } from './toast';
 
 const MINUS = '−';
 const brl2 = (v: number) => (v < -0.005 ? MINUS : '') + fmt.brl2(Math.abs(v));
-const brlK = (v: number) => (v < -0.5 ? MINUS : '') + fmt.brlCompact(Math.abs(v));
+const brlK = (v: number) => (v < -0.005 ? MINUS : '') + fmt.brlCompact(Math.abs(v));
 const signedBrl = (v: number) => (v > 0.005 ? '+' : '') + brl2(v);
 const pct = (v: number, digits = 2) => `${fmt.dec(v * 100, digits)}%`;
 const signedPct = (v: number, digits = 2) => (v > 0.00005 ? '+' : v < -0.00005 ? MINUS : '') + pct(Math.abs(v), digits);
 const plural = (k: number, one: string, many: string) => `${k} ${k === 1 ? one : many}`;
 const dmy = (iso: string) => fmtDate.dayMonthYear(parseIso(iso));
 
-/** Lê números digitados em português: "1.234,5", "-12,75", "12.5" ou "15%". */
-export function parseNum(input: string): number | null {
-  const raw = input.replace(/[R$%\s ]/g, '');
-  if (!raw) return null;
-  const neg = /^[-−]/.test(raw);
-  const s = raw.replace(/^[-−+]/, '');
-  let norm: string;
-  if (s.includes(',')) norm = s.replace(/\./g, '').replace(',', '.');
-  else if ((s.match(/\./g) || []).length === 1 && !/\.\d{3}$/.test(s)) norm = s;
-  else norm = s.replace(/\./g, '');
-  if (!/^\d+(\.\d+)?$/.test(norm) && !/^\.\d+$/.test(norm)) return null;
-  const n = parseFloat(norm);
-  return Number.isFinite(n) ? (neg ? -n : n) : null;
-}
+export { parseNum } from '../lib/format';
 
 const numInput = (n: number, digits = 2) => n.toLocaleString('pt-BR', { maximumFractionDigits: digits });
 
@@ -145,7 +132,7 @@ export function InvestView({ now, intent, onIntentDone }: { now: Date; intent: I
 
   /** Grava a lista nova e oferece desfazer. */
   const commit = (next: Investment[], message: string, nextCdi = cdi) => {
-    const previous = fin.saveInvest({ list: next, cdi: nextCdi });
+    const previous = fin.saveInvest({ ...fin.invest, list: next, cdi: nextCdi });
     toast(message, 'success', { action: { label: 'Desfazer', run: () => fin.saveInvest(previous) } });
   };
 
@@ -164,7 +151,7 @@ export function InvestView({ now, intent, onIntentDone }: { now: Date; intent: I
   };
 
   const loadSamples = () => {
-    const prev = fin.saveInvest({ list: [...list.filter((x) => !isSampleInvestment(x)), ...generateSampleInvestments(now)], cdi });
+    const prev = fin.saveInvest({ ...fin.invest, list: [...list.filter((x) => !isSampleInvestment(x)), ...generateSampleInvestments(now)] });
     toast('Exemplos carregados. Apague quando quiser começar com os seus.', 'info', { action: { label: 'Desfazer', run: () => fin.saveInvest(prev) } });
   };
 

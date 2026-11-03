@@ -103,9 +103,9 @@ import { Delta, FloatingTip, Logo, Popover, Segmented, Swatch, cssVars, cx, tipP
 // Formatação
 
 const MINUS = '−';
-const brl0 = (v: number) => (v < -0.5 ? MINUS : '') + fmt.brl(Math.abs(v));
+const brl0 = (v: number) => (v < -0.005 ? MINUS : '') + fmt.brl(Math.abs(v));
 const brl2 = (v: number) => (v < -0.005 ? MINUS : '') + fmt.brl2(Math.abs(v));
-const brlK = (v: number) => (v < -0.5 ? MINUS : '') + fmt.brlCompact(Math.abs(v));
+const brlK = (v: number) => (v < -0.005 ? MINUS : '') + fmt.brlCompact(Math.abs(v));
 const dm = (iso: string) => fmtDate.dayMonth(parseIso(iso));
 const pctChange = (cur: number, prev: number) => (prev ? (cur - prev) / Math.abs(prev) : 0);
 const plural = (k: number, one: string, many: string) => `${k} ${k === 1 ? one : many}`;
@@ -169,14 +169,14 @@ function ExpenseStatusPill({ e, today, short }: { e: Expense; today: string; sho
 }
 
 function MoneyDelta({ value, goodWhenUp = true, label }: { value: number; goodWhenUp?: boolean; label: string }) {
-  const dir = Math.abs(value) < 0.5 ? 'flat' : value > 0 ? 'up' : 'down';
+  const dir = Math.abs(value) < 0.005 ? 'flat' : value > 0 ? 'up' : 'down';
   const tone = dir === 'flat' ? 'flat' : (dir === 'up') === goodWhenUp ? 'good' : 'bad';
   const Icon = dir === 'up' ? ArrowUpRight : dir === 'down' ? ArrowDownRight : ArrowRight;
   return (
     <span className="delta" data-tone={tone}>
       <Icon size={14} strokeWidth={2.4} aria-hidden="true" />
       <span>
-        {value > 0.5 ? '+' : value < -0.5 ? MINUS : ''}
+        {value > 0.005 ? '+' : value < -0.005 ? MINUS : ''}
         {fmt.brlCompact(Math.abs(value))}
       </span>
       <span className="sr-only"> {label}</span>
@@ -1774,7 +1774,7 @@ function SummaryBlock({ model, onShowCategory }: { model: MonthFinance; onShowCa
                       {GROUP_HINT[r.id] ? <span className="dre-hint">{GROUP_HINT[r.id]}</span> : null}
                     </th>
                     <td className={cx('num', final && r.value < 0 && 'num-neg')}>{brl2(r.value)}</td>
-                    <td className="num muted">{(final && r.value < -0.5 ? MINUS : '') + share(r.value)}</td>
+                    <td className="num muted">{(final && rev && r.value < -0.005 ? MINUS : '') + share(r.value)}</td>
                     {showPrev ? <td className="num muted">{model.prev ? brl0(r.prev) : '—'}</td> : null}
                   </tr>
                   {r.kind === 'group' && isOpen

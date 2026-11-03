@@ -4,7 +4,7 @@
 // Identidade que o painel inteiro respeita:
 //   Saldo do mês = Receitas − Gastos
 
-import { MONTHS } from './format';
+import { MONTHS, normalize } from './format';
 
 // ---------------------------------------------------------------------------
 // Tipos
@@ -352,11 +352,16 @@ export function buildTrend(months: MonthKey[], all: Expense[], current: MonthKey
   });
 }
 
+const billKey = (e: Expense) => `${e.kind}|${e.category}|${normalize(e.description.trim())}`;
+
 /** Lançamentos fixos do mês anterior que ainda não têm ocorrência no mês `key`. */
 export function missingRecurring(all: Expense[], key: MonthKey): Expense[] {
   const prevKey = addMonths(key, -1);
-  const present = new Set(all.filter((e) => e.competence === key && e.seriesId).map((e) => e.seriesId));
-  return all.filter((e) => e.competence === prevKey && e.recurring && e.seriesId && !present.has(e.seriesId));
+  const inMonth = all.filter((e) => e.competence === key);
+  const series = new Set(inMonth.flatMap((e) => (e.seriesId ? [e.seriesId] : [])));
+  // Lançado à mão (sem o "Lançar agora") também conta: mesma descrição e categoria, mesmo com outro valor.
+  const bills = new Set(inMonth.map(billKey));
+  return all.filter((e) => e.competence === prevKey && e.recurring && e.seriesId && !series.has(e.seriesId) && !bills.has(billKey(e)));
 }
 
 /** Cria a ocorrência de um lançamento fixo no mês `key`, no mesmo dia. */

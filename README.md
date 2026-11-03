@@ -11,7 +11,7 @@ Painel para controlar o próprio dinheiro: o que entra, o que sai, quanto sobra 
 - **Meu mês**: receitas menos gastos, comparação com o mês anterior, saldo dos últimos meses, avisos de contas atrasadas e orçamento por categoria.
 - **Lançamentos completos**: parcelas, contas fixas que se repetem, mês da fatura, forma de pagamento, pagar com um clique e desfazer.
 - **Investimentos**: carteira com rendimento estimado por % do CDI ou taxa fixa, aportes e resgates, simulador de juros compostos e calculadora de porcentagem.
-- **Bolsa ao vivo**: cotações de B3, Nova York, Londres, Frankfurt, Tóquio, Hong Kong, moedas e cripto, com gráfico do dia. Funciona quando há internet; sem conexão, mostra as últimas cotações.
+- **Bolsa ao vivo**: cotações de B3, Nova York, Londres, Frankfurt, Tóquio, Hong Kong, moedas e cripto, com gráfico do dia, e o lucro ou prejuízo das suas ações pela cotação de agora. Funciona quando há internet; sem conexão, mostra as últimas cotações.
 - **Conquistas e metas**: 22 conquistas calculadas pelos seus dados, uma linha do tempo com seus marcos e metas com quanto guardar por mês.
 - **Do seu jeito**: temas Claro, Escuro e Neon, planos de fundo (inclusive uma foto sua), títulos gigantes animados e um rastro no cursor.
 - **Seus dados são seus**: arquivo local com backup diário automático, exportação para planilha e backup em um clique.
@@ -53,7 +53,7 @@ O workflow em `.github/workflows/demo.yml` publica a demonstração no GitHub Pa
 
 | Onde | O que é |
 |---|---|
-| `dados/orla-financas.json` | Lançamentos, limites do orçamento, investimentos e metas |
+| `dados/orla-financas.json` | Lançamentos, limites do orçamento, investimentos, compras e vendas de ações e metas |
 | `dados/backups/` | Uma cópia por dia, guardando os últimos 30 dias |
 | Navegador | Uma cópia de segurança. Se o arquivo não responder, o painel continua salvando aqui. O tema, o plano de fundo e os efeitos ficam só aqui |
 
@@ -78,6 +78,7 @@ Para levar os dados para outro PC: **Dados e backup → Baixar backup**. Para vo
 - **Valor de hoje**: calculado com juros compostos a partir do último valor conferido, pela taxa informada (% do CDI, % ao ano ou % ao mês). Quando não foi conferido hoje, aparece como “estimado”. Tudo antes do imposto de renda.
 - **Simulador** e **calculadora de porcentagem**.
 - **Bolsa** (aba ao lado de “Minha carteira”): escolha a bolsa e veja o índice principal, o gráfico do dia com cursor e a lista de ações com a variação do dia. Dá para adicionar qualquer ação, índice ou moeda pela busca e tirar as que não quiser. Atualiza sozinho a cada minuto.
+  - **Minhas ações**: registre cada compra e venda (quantidade, preço por cota, data e custos de corretagem). O painel calcula o preço médio, quanto suas cotas valem agora, o lucro ou prejuízo em R$ e em %, a variação do dia e o resultado já realizado nas vendas. Ações em dólar, euro e outras moedas aparecem na moeda original e em reais, pelo câmbio de agora. As operações ficam no arquivo de dados e entram no backup.
   - É a exceção do painel: precisa de internet. Sem conexão, aparece um aviso e ficam as últimas cotações guardadas. O resto do painel continua funcionando normalmente.
   - Os dados vêm do Yahoo Finanças pelo servidor do próprio painel (o navegador não pode chamar o Yahoo direto), sem cadastro nem chave. Por isso a demonstração online, que não tem servidor, não mostra cotações. Algumas bolsas têm atraso de até 15 minutos.
 
@@ -113,6 +114,7 @@ Para levar os dados para outro PC: **Dados e backup → Baixar backup**. Para vo
 | `src/components/finance.tsx` | Tela “Meu mês” e formulário de lançamento |
 | `src/components/investimentos.tsx` | Tela “Investimentos”, simulador e calculadora |
 | `src/lib/bolsa.ts`, `src/components/bolsa.tsx` | Bolsas, cotações, conexão e a aba “Bolsa” |
+| `src/lib/acoes.ts`, `src/components/minhasAcoes.tsx` | Compras e vendas, preço médio e lucro/prejuízo |
 | `src/components/conquistas.tsx` | Tela “Conquistas”, linha do tempo e metas |
 | `src/components/configuracoes.tsx` | Tela “Configurações” |
 | `src/components/dados.tsx` | Tela “Dados e backup” |

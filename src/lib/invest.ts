@@ -5,6 +5,7 @@
 // informada, com juros compostos por dia corrido. Tudo antes do imposto de renda.
 
 import { addDays, addMonths, isoDate, isValidId, monthKeyOf, parseIso, SAMPLE_PREFIX, type MonthKey } from './finance';
+import { sanitizeTrades, type StockTrade } from './acoes';
 
 export type InvestType = 'tesouro' | 'cdb' | 'poupanca' | 'acoes' | 'fiis' | 'cripto' | 'previdencia' | 'outros';
 
@@ -59,12 +60,14 @@ export interface InvestData {
   list: Investment[];
   /** CDI usado nas contas, em % ao ano. */
   cdi: number;
+  /** Compras e vendas de ações (aba Bolsa). */
+  trades: StockTrade[];
 }
 
 /** CDI de referência para começar; dá para trocar na tela de investimentos. */
 export const DEFAULT_CDI = 14.9;
 
-export const EMPTY_INVEST: InvestData = { list: [], cdi: DEFAULT_CDI };
+export const EMPTY_INVEST: InvestData = { list: [], cdi: DEFAULT_CDI, trades: [] };
 
 // ---------------------------------------------------------------------------
 // Taxas
@@ -277,11 +280,11 @@ export function sanitizeInvestData(raw: unknown): InvestData {
   const r = raw as Record<string, unknown>;
   const list = Array.isArray(r.lista) ? r.lista.flatMap((x) => sanitizeInvestment(x) ?? []) : [];
   const cdi = num(r.cdi);
-  return { list, cdi: cdi !== null && cdi > 0 && cdi < 100 ? cdi : DEFAULT_CDI };
+  return { list, cdi: cdi !== null && cdi > 0 && cdi < 100 ? cdi : DEFAULT_CDI, trades: sanitizeTrades(r.operacoes) };
 }
 
 /** Formato gravado no arquivo (chaves em português, como o resto do arquivo). */
-export const investDataToFile = (d: InvestData) => ({ lista: d.list, cdi: d.cdi });
+export const investDataToFile = (d: InvestData) => ({ lista: d.list, cdi: d.cdi, operacoes: d.trades });
 
 export const isSampleInvestment = (inv: Investment) => inv.id.startsWith(SAMPLE_PREFIX);
 

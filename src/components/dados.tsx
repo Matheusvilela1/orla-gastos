@@ -64,7 +64,7 @@ export function DataView({ now }: { now: Date }) {
     const { invest: inv, goals } = pendingRestore.data;
     fin.replaceAll(list, pendingRestore.data.budgets, inv, goals);
     setPendingRestore(null);
-    const extras = [inv.list.length ? `${inv.list.length} investimentos` : '', goals.length ? `${goals.length} metas` : ''].filter(Boolean);
+    const extras = [inv.list.length ? `${inv.list.length} investimentos` : '', inv.trades.length ? `${inv.trades.length} operações na bolsa` : '', goals.length ? `${goals.length} metas` : ''].filter(Boolean);
     toast(`Backup restaurado: ${list.length} lançamentos${extras.length ? ` e ${extras.join(' e ')}` : ''}.`, 'success');
   };
 

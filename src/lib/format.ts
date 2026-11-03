@@ -10,14 +10,17 @@ const MINUS = '−';
 const dec = (v: number, digits: number) =>
   v.toLocaleString('pt-BR', { minimumFractionDigits: digits, maximumFractionDigits: digits });
 
+// Valores redondos ficam sem centavos ("R$ 2.600"); com centavos, eles sempre aparecem ("R$ 61,31").
+const hasCents = (v: number) => Math.abs(v - Math.round(v)) >= 0.005;
+
 export const fmt = {
-  brl: (v: number) => brl0.format(v),
+  brl: (v: number) => (hasCents(v) ? brl2 : brl0).format(v),
   brl2: (v: number) => brl2.format(v),
   int: (v: number) => int.format(Math.round(v)),
   dec,
   compact: (v: number) => compact.format(v),
-  /** "R$ 412,4 mil", "R$ 1,2 mi" */
-  brlCompact: (v: number) => `R$ ${compact.format(v)}`,
+  /** "R$ 412,4 mil", "R$ 1,2 mi"; abaixo de mil, o valor exato ("R$ 61,31") */
+  brlCompact: (v: number) => (Math.abs(v) < 1000 ? fmt.brl(v) : `R$ ${compact.format(v)}`),
   pct: (v: number, digits = 1) => `${dec(v * 100, digits)}%`,
   signedPct: (v: number, digits = 1) => {
     const s = v > 0 ? '+' : v < 0 ? MINUS : '';
@@ -75,3 +78,18 @@ export const normalize = (s: string) =>
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase();
+
+/** Lê números digitados em português: "1.234,5", "-12,75", "12.5" ou "15%". */
+export function parseNum(input: string): number | null {
+  const raw = input.replace(/[R$%\s ]/g, '');
+  if (!raw) return null;
+  const neg = /^[-−]/.test(raw);
+  const s = raw.replace(/^[-−+]/, '');
+  let norm: string;
+  if (s.includes(',')) norm = s.replace(/\./g, '').replace(',', '.');
+  else if ((s.match(/\./g) || []).length === 1 && !/\.\d{3}$/.test(s)) norm = s;
+  else norm = s.replace(/\./g, '');
+  if (!/^\d+(\.\d+)?$/.test(norm) && !/^\.\d+$/.test(norm)) return null;
+  const n = parseFloat(norm);
+  return Number.isFinite(n) ? (neg ? -n : n) : null;
+}

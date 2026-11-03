@@ -454,7 +454,7 @@ export function FinanceProvider({
       ready,
       expenses,
       budgets: storedBudgets ?? DEFAULT_BUDGETS,
-      hasChanges: expenses.length > 0 || storedBudgets !== null || invest.list.length > 0 || goals.length > 0,
+      hasChanges: expenses.length > 0 || storedBudgets !== null || invest.list.length > 0 || invest.trades.length > 0 || goals.length > 0,
       save,
       remove,
       apply: commit,

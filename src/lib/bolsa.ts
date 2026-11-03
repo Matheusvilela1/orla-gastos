@@ -148,6 +148,10 @@ export const EXCHANGES: Exchange[] = [
   },
 ];
 
+/** Nome curto conhecido ("Petrobras" em vez de "Petróleo Brasileiro S.A. - Petrobras"), se o ativo está nas listas padrão. */
+export const knownName = (simbolo: string, fallback: string) =>
+  EXCHANGES.flatMap((e) => [e.main, ...e.tickers]).find((t) => t.simbolo === simbolo)?.nome ?? fallback;
+
 export const exchangeById = (id: ExchangeId) => EXCHANGES.find((e) => e.id === id) ?? EXCHANGES[0];
 
 // ---------------------------------------------------------------------------
@@ -218,6 +222,18 @@ export function formatPrice(q: Pick<Quote, 'simbolo' | 'tipo' | 'moeda'>, value:
   return f.format(v);
 }
 
+/** Valor em uma moeda (já em libras, não centavos): "US$ 12,30". */
+export const formatMoney = (moeda: string, value: number) => formatPrice({ simbolo: '', tipo: '', moeda }, value);
+
+/** "US$", "R$", "£"… para o prefixo dos campos. */
+export function currencySymbol(moeda: string): string {
+  try {
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: moeda }).formatToParts(0).find((p) => p.type === 'currency')?.value ?? moeda;
+  } catch {
+    return moeda;
+  }
+}
+
 /** Variação do dia sobre o fechamento anterior (0,012 = +1,2%), ou null. */
 export const changeOf = (q: Quote) => (q.anterior ? (q.preco - q.anterior) / q.anterior : null);
 
@@ -263,6 +279,36 @@ async function getJson<T>(url: string): Promise<T> {
 
 export async function searchSymbols(q: string): Promise<SearchResult[]> {
   return getJson<SearchResult[]>(`/api/cotacoes/busca?q=${encodeURIComponent(q)}`);
+}
+
+/** Busca de ações, índices e moedas pelo nome ou código, com espera de 300 ms entre teclas. */
+export function useSymbolSearch(q: string, active = true) {
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [state, setState] = useState<'idle' | 'buscando' | 'pronto' | 'erro'>('idle');
+  useEffect(() => {
+    const term = q.trim();
+    if (!active || term.length < 2) {
+      setResults([]);
+      setState('idle');
+      return;
+    }
+    let alive = true;
+    setState('buscando');
+    const timer = window.setTimeout(() => {
+      searchSymbols(term)
+        .then((r) => {
+          if (!alive) return;
+          setResults(r);
+          setState('pronto');
+        })
+        .catch(() => alive && setState('erro'));
+    }, 300);
+    return () => {
+      alive = false;
+      window.clearTimeout(timer);
+    };
+  }, [q, active]);
+  return { results, state };
 }
 
 interface Cache {

@@ -6,25 +6,26 @@ import {
   exchangeById,
   exchangeTime,
   formatPrice,
+  knownName,
   marketOpen,
   readPrefs,
   savePrefs,
-  searchSymbols,
   shortSymbol,
   tickersOf,
   useOnline,
   useQuotes,
+  useSymbolSearch,
   type BolsaPrefs,
   type ExchangeId,
   type Quote,
   type QuoteStatus,
-  type SearchResult,
   type Ticker,
 } from '../lib/bolsa';
-import { IS_DEMO } from '../lib/financeStore';
+import { IS_DEMO, useFinance } from '../lib/financeStore';
 import { fmt, fmtDate } from '../lib/format';
 import { useElementWidth } from '../lib/hooks';
 import { spotlight } from '../lib/motion';
+import { MyStocks, heldSymbols } from './minhasAcoes';
 import { Poster } from './poster';
 import { useToast } from './toast';
 import { FloatingTip, Popover, cx, type TipState } from './ui';
@@ -68,10 +69,15 @@ export function BolsaView() {
   const ex = exchangeById(prefs.bolsa);
   const list = tickersOf(prefs, ex);
   const symbols = useMemo(() => [ex.main.simbolo, ...list.map((t) => t.simbolo).filter((s) => s !== ex.main.simbolo)], [ex, list]);
-  const { quotes, at, status, failed, busy, refresh } = useQuotes(symbols);
+  // Também as ações da pessoa (e o câmbio delas), para o lucro e o prejuízo.
+  const trades = useFinance().invest.trades;
+  const held = useMemo(() => heldSymbols(trades), [trades]);
+  const fetchList = useMemo(() => [...new Set([...symbols, ...held])], [symbols, held]);
+  const { quotes, at, status, failed, busy, refresh } = useQuotes(fetchList);
   const [focus, setFocus] = useState<string | null>(null);
-  const shown = focus && symbols.includes(focus) ? focus : ex.main.simbolo;
-  const nameOf = (s: string) => (s === ex.main.simbolo ? ex.main.nome : list.find((t) => t.simbolo === s)?.nome) ?? quotes[s]?.nome ?? s;
+  const shown = focus && fetchList.includes(focus) ? focus : ex.main.simbolo;
+  const nameOf = (s: string) =>
+    (s === ex.main.simbolo ? ex.main.nome : list.find((t) => t.simbolo === s)?.nome) ?? trades.find((t) => t.simbolo === s)?.nome ?? quotes[s]?.nome ?? s;
 
   const update = (p: BolsaPrefs) => {
     setPrefs(p);
@@ -146,6 +152,8 @@ export function BolsaView() {
 
       <div className="grid fin-grid bolsa-grid">
         <ConnectionAlert status={status} at={at} hasData={!!Object.keys(quotes).length} onRetry={refresh} />
+
+        <MyStocks quotes={quotes} onFocus={setFocus} />
 
         <section className="sheet sheet-fin-hero" aria-labelledby="bolsa-destaque" onPointerMove={spotlight}>
           <QuoteSummary q={shownQuote} name={nameOf(shown)} symbol={shown} loading={status === 'carregando'} />
@@ -597,38 +605,13 @@ function AddTicker({ onAdd }: { onAdd: (t: Ticker) => void }) {
   const online = useOnline();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState('');
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [state, setState] = useState<'idle' | 'buscando' | 'pronto' | 'erro'>('idle');
+  const { results, state } = useSymbolSearch(q, open);
   const anchorRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (open) inputRef.current?.focus();
   }, [open]);
-
-  useEffect(() => {
-    const term = q.trim();
-    if (!open || term.length < 2) {
-      setResults([]);
-      setState('idle');
-      return;
-    }
-    let alive = true;
-    setState('buscando');
-    const timer = window.setTimeout(() => {
-      searchSymbols(term)
-        .then((r) => {
-          if (!alive) return;
-          setResults(r);
-          setState('pronto');
-        })
-        .catch(() => alive && setState('erro'));
-    }, 300);
-    return () => {
-      alive = false;
-      window.clearTimeout(timer);
-    };
-  }, [q, open]);
 
   const close = () => {
     setOpen(false);
@@ -673,7 +656,7 @@ function AddTicker({ onAdd }: { onAdd: (t: Ticker) => void }) {
                 role="listitem"
                 className="ticker-opt"
                 onClick={() => {
-                  onAdd({ simbolo: r.simbolo, nome: r.nome });
+                  onAdd({ simbolo: r.simbolo, nome: knownName(r.simbolo, r.nome) });
                   close();
                 }}
               >
