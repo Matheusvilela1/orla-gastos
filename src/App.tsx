@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { Calculator, Download, Image, Moon, PanelLeft, Percent, PiggyBank, Plus, Sparkles, Sun, Target, TrendingUp, TriangleAlert } from 'lucide-react';
+import { Calculator, ChartCandlestick, Download, Image, Moon, PanelLeft, Percent, PiggyBank, Plus, Sparkles, Sun, Target, TrendingUp, TriangleAlert } from 'lucide-react';
 import { isoDate, isSample, monthKeyOf, addMonths, type Expense, type MonthKey } from './lib/finance';
 import { AppearanceProvider, Backdrop } from './lib/appearance';
 import { FinanceProvider, IS_DEMO, createDemoBackend, useFinance } from './lib/financeStore';
@@ -145,6 +145,7 @@ function Workspace() {
       { id: 'meta', group: 'Ações', label: 'Ver metas e conquistas', keywords: 'meta objetivo sonho conquista trofeu linha do tempo', icon: Target, run: () => navigate('conquistas') },
       { id: 'simular', group: 'Ações', label: 'Simular investimento', keywords: 'juros compostos rendimento futuro meta', icon: Calculator, run: () => toInvest('simulador') },
       { id: 'porcentagem', group: 'Ações', label: 'Calcular porcentagem', keywords: 'percentual desconto aumento variacao', icon: Percent, run: () => toInvest('porcentagem') },
+      { id: 'bolsa', group: 'Ações', label: 'Ver cotações da bolsa', keywords: 'acoes ibovespa b3 dolar nasdaq cotacao mercado', icon: ChartCandlestick, run: () => toInvest('bolsa') },
       { id: 'backup', group: 'Ações', label: 'Baixar backup', keywords: 'exportar copia seguranca', icon: Download, run: () => navigate('dados') },
       ...(wide ? [{ id: 'menu', group: 'Ações', label: collapsed ? 'Expandir menu lateral' : 'Recolher menu lateral', icon: PanelLeft, run: toggleCollapsed }] : []),
     ];

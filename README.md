@@ -1,6 +1,6 @@
 # Orla · Finanças pessoais
 
-Painel para controlar o próprio dinheiro: o que entra, o que sai, quanto sobra no mês, onde está investido e quanto falta para cada meta. Roda no seu computador e guarda tudo num arquivo JSON na pasta do projeto. Nada vai para a internet.
+Painel para controlar o próprio dinheiro: o que entra, o que sai, quanto sobra no mês, onde está investido e quanto falta para cada meta. Roda no seu computador e guarda tudo num arquivo JSON na pasta do projeto. Seus dados nunca vão para a internet; a única parte que usa conexão são as cotações da bolsa.
 
 ![Tela "Meu mês" no tema escuro, com o título "Sobrando R$ 3.275" e o gráfico de saldo por mês](docs/meu-mes.png)
 
@@ -11,6 +11,7 @@ Painel para controlar o próprio dinheiro: o que entra, o que sai, quanto sobra 
 - **Meu mês**: receitas menos gastos, comparação com o mês anterior, saldo dos últimos meses, avisos de contas atrasadas e orçamento por categoria.
 - **Lançamentos completos**: parcelas, contas fixas que se repetem, mês da fatura, forma de pagamento, pagar com um clique e desfazer.
 - **Investimentos**: carteira com rendimento estimado por % do CDI ou taxa fixa, aportes e resgates, simulador de juros compostos e calculadora de porcentagem.
+- **Bolsa ao vivo**: cotações de B3, Nova York, Londres, Frankfurt, Tóquio, Hong Kong, moedas e cripto, com gráfico do dia. Funciona quando há internet; sem conexão, mostra as últimas cotações.
 - **Conquistas e metas**: 22 conquistas calculadas pelos seus dados, uma linha do tempo com seus marcos e metas com quanto guardar por mês.
 - **Do seu jeito**: temas Claro, Escuro e Neon, planos de fundo (inclusive uma foto sua), títulos gigantes animados e um rastro no cursor.
 - **Seus dados são seus**: arquivo local com backup diário automático, exportação para planilha e backup em um clique.
@@ -76,6 +77,9 @@ Para levar os dados para outro PC: **Dados e backup → Baixar backup**. Para vo
 - **Sua carteira**: cada investimento com aportes, resgates e o valor conferido no banco.
 - **Valor de hoje**: calculado com juros compostos a partir do último valor conferido, pela taxa informada (% do CDI, % ao ano ou % ao mês). Quando não foi conferido hoje, aparece como “estimado”. Tudo antes do imposto de renda.
 - **Simulador** e **calculadora de porcentagem**.
+- **Bolsa** (aba ao lado de “Minha carteira”): escolha a bolsa e veja o índice principal, o gráfico do dia com cursor e a lista de ações com a variação do dia. Dá para adicionar qualquer ação, índice ou moeda pela busca e tirar as que não quiser. Atualiza sozinho a cada minuto.
+  - É a exceção do painel: precisa de internet. Sem conexão, aparece um aviso e ficam as últimas cotações guardadas. O resto do painel continua funcionando normalmente.
+  - Os dados vêm do Yahoo Finanças pelo servidor do próprio painel (o navegador não pode chamar o Yahoo direto), sem cadastro nem chave. Por isso a demonstração online, que não tem servidor, não mostra cotações. Algumas bolsas têm atraso de até 15 minutos.
 
 **Conquistas**
 - **Placar** com as conquistas desbloqueadas e a que está mais perto.
@@ -108,12 +112,13 @@ Para levar os dados para outro PC: **Dados e backup → Baixar backup**. Para vo
 | `src/lib/appearance.tsx` | Plano de fundo e efeitos |
 | `src/components/finance.tsx` | Tela “Meu mês” e formulário de lançamento |
 | `src/components/investimentos.tsx` | Tela “Investimentos”, simulador e calculadora |
+| `src/lib/bolsa.ts`, `src/components/bolsa.tsx` | Bolsas, cotações, conexão e a aba “Bolsa” |
 | `src/components/conquistas.tsx` | Tela “Conquistas”, linha do tempo e metas |
 | `src/components/configuracoes.tsx` | Tela “Configurações” |
 | `src/components/dados.tsx` | Tela “Dados e backup” |
 | `src/components/shell.tsx` | Menu lateral, barra superior e busca `Ctrl+K` |
 | `src/components/poster.tsx`, `cursorTrail.tsx` | Títulos gigantes e rastro no cursor |
-| `vite.config.ts` | Servidor local que lê e grava `dados/orla-financas.json` |
+| `vite.config.ts` | Servidor local que lê e grava `dados/orla-financas.json` e busca as cotações |
 
 Feito com React 19, TypeScript, Vite e ícones [Lucide](https://lucide.dev).
 

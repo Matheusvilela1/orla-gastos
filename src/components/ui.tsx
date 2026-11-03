@@ -1,4 +1,4 @@
-import { useRef, type CSSProperties, type KeyboardEvent, type ReactNode, type RefObject } from 'react';
+import { useLayoutEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode, type RefObject } from 'react';
 import { ArrowDownRight, ArrowRight, ArrowUpRight } from 'lucide-react';
 import { fmt } from '../lib/format';
 import { useDismiss } from '../lib/hooks';
@@ -173,4 +173,32 @@ export function Skeleton({ w = '100%', h = 14, r = 6 }: { w?: number | string; h
 
 export function Kbd({ children }: { children: ReactNode }) {
   return <kbd className="kbd">{children}</kbd>;
+}
+
+// ---------------------------------------------------------------------------
+// Filtros com sublinhado que desliza até a opção escolhida
+
+export function UnderlineTabs<T extends string>({ value, options, onChange, label }: { value: T; options: { value: T; label: string; count?: number }[]; onChange: (v: T) => void; label: string }) {
+  const boxRef = useRef<HTMLDivElement | null>(null);
+  const [bar, setBar] = useState<{ x: number; w: number } | null>(null);
+  useLayoutEffect(() => {
+    const measure = () => {
+      const el = boxRef.current?.querySelector<HTMLElement>('[aria-pressed="true"]');
+      if (el) setBar({ x: el.offsetLeft, w: el.offsetWidth });
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [value, options.length]);
+  return (
+    <div ref={boxRef} className="utabs" role="group" aria-label={label}>
+      {options.map((o) => (
+        <button key={o.value} type="button" className="utab" aria-pressed={o.value === value} onClick={() => onChange(o.value)}>
+          {o.label}
+          {o.count !== undefined ? <span className="utab-count">{o.count}</span> : null}
+        </button>
+      ))}
+      {bar ? <span className="utabs-bar" style={cssVars({ '--x': `${bar.x}px`, '--w': `${bar.w}px` })} aria-hidden="true" /> : null}
+    </div>
+  );
 }

@@ -26,7 +26,7 @@ import {
 import { fmt, fmtDate } from '../lib/format';
 import { formatBRLInput, isoDate, monthKeyOf, monthLabel, monthShort, parseBRL, parseIso } from '../lib/finance';
 import { useFinance } from '../lib/financeStore';
-import { copyText, useBodyLock, useCountUp, useFocusTrap, useReducedMotion } from '../lib/hooks';
+import { copyText, storage, useBodyLock, useCountUp, useFocusTrap, useReducedMotion } from '../lib/hooks';
 import {
   INVEST_ORDER,
   INVEST_TYPES,
@@ -48,7 +48,8 @@ import {
   type RateKind,
 } from '../lib/invest';
 import { spotlight, usePresence } from '../lib/motion';
-import { FloatingTip, Popover, Segmented, Swatch, cssVars, cx, tipPosition, type TipState } from './ui';
+import { FloatingTip, Popover, Segmented, Swatch, UnderlineTabs, cssVars, cx, tipPosition, type TipState } from './ui';
+import { BolsaView } from './bolsa';
 import { Poster } from './poster';
 import { useToast } from './toast';
 
@@ -94,7 +95,13 @@ export const INVEST_ICON: Record<InvestType, LucideIcon> = {
 
 const NAME_SUGGESTIONS = ['Reserva de emergência', 'Tesouro Selic', 'Tesouro IPCA+', 'CDB', 'LCI', 'LCA', 'Poupança', 'Caixinha', 'Ações', 'FIIs', 'Bitcoin', 'Previdência'];
 
-export type InvestIntent = 'novo' | 'simulador' | 'porcentagem';
+export type InvestIntent = 'novo' | 'simulador' | 'porcentagem' | 'bolsa';
+
+type InvestTab = 'carteira' | 'bolsa';
+const TABS: { value: InvestTab; label: string }[] = [
+  { value: 'carteira', label: 'Minha carteira' },
+  { value: 'bolsa', label: 'Bolsa' },
+];
 
 type EditorRequest = { mode: 'novo' } | { mode: 'editar' | 'aporte' | 'resgate' | 'valor'; inv: Investment };
 type EditorState = EditorRequest & { nonce: number };
@@ -116,14 +123,22 @@ export function InvestView({ now, intent, onIntentDone }: { now: Date; intent: I
   const simRef = useRef<HTMLElement | null>(null);
   const pctRef = useRef<HTMLElement | null>(null);
   const samples = list.filter(isSampleInvestment);
+  const [tab, setTabState] = useState<InvestTab>(() => (storage.get<InvestTab>('orla.invest.aba', 'carteira') === 'bolsa' ? 'bolsa' : 'carteira'));
+  const setTab = (t: InvestTab) => {
+    setTabState(t);
+    storage.set('orla.invest.aba', t);
+  };
 
   const open = (s: EditorRequest) => setEditor({ ...s, nonce: ++nonce.current });
-  const scrollTo = (el: HTMLElement | null) => window.requestAnimationFrame(() => el?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' }));
+  // Dois quadros: dá tempo de a aba da carteira aparecer antes de rolar.
+  const scrollTo = (pick: () => HTMLElement | null) =>
+    window.requestAnimationFrame(() => window.requestAnimationFrame(() => pick()?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' })));
 
   useEffect(() => {
     if (!intent) return;
+    setTab(intent === 'bolsa' ? 'bolsa' : 'carteira');
     if (intent === 'novo') open({ mode: 'novo' });
-    else scrollTo(intent === 'simulador' ? simRef.current : pctRef.current);
+    else if (intent !== 'bolsa') scrollTo(() => (intent === 'simulador' ? simRef.current : pctRef.current));
     onIntentDone();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [intent]);
@@ -157,7 +172,7 @@ export function InvestView({ now, intent, onIntentDone }: { now: Date; intent: I
 
   const simulateFrom = (inv: Investment, p: Position) => {
     setSeed({ initial: p.value, rateKind: inv.rateKind === 'nenhuma' ? 'ano' : inv.rateKind, rate: inv.rateKind === 'nenhuma' ? 10 : inv.rate, key: Date.now(), name: inv.name });
-    scrollTo(simRef.current);
+    scrollTo(() => simRef.current);
   };
 
   const editorEl = shownEditor ? (
@@ -173,8 +188,23 @@ export function InvestView({ now, intent, onIntentDone }: { now: Date; intent: I
     />
   ) : null;
 
+  const tabs = (
+    <div className="inv-tabs">
+      <UnderlineTabs label="Investimentos" value={tab} options={TABS} onChange={setTab} />
+    </div>
+  );
+
+  if (tab === 'bolsa')
+    return (
+      <>
+        {tabs}
+        <BolsaView />
+      </>
+    );
+
   return (
     <>
+      {tabs}
       <Poster
         kicker="Investimentos"
         lines={list.length ? [{ text: 'Seu dinheiro' }, { text: portfolio.gain > 0.005 ? `+${fmt.brl(portfolio.gain)} rendendo` : fmt.brl(portfolio.value), accent: true }] : [{ text: 'Faça o dinheiro' }, { text: 'trabalhar.', accent: true }]}

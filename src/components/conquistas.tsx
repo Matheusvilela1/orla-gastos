@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import {
   Banknote,
   CalendarCheck,
@@ -40,7 +40,7 @@ import { GOAL_SOURCES, goalCurrent, newGoalId, type Goal, type GoalSource } from
 import { usePresence, useRevealOnScroll } from '../lib/motion';
 import { Poster } from './poster';
 import { useToast } from './toast';
-import { Segmented, cssVars } from './ui';
+import { Segmented, UnderlineTabs, cssVars } from './ui';
 
 const ICONS: Record<string, LucideIcon> = {
   'primeiro-passo': Footprints,
@@ -79,34 +79,6 @@ const monthsUntil = (today: string, deadline: string) => {
 };
 
 type GoalEditor = { mode: 'novo' } | { mode: 'editar'; goal: Goal };
-
-// ---------------------------------------------------------------------------
-// Filtros com sublinhado que desliza até a opção escolhida
-
-function UnderlineTabs<T extends string>({ value, options, onChange, label }: { value: T; options: { value: T; label: string; count?: number }[]; onChange: (v: T) => void; label: string }) {
-  const boxRef = useRef<HTMLDivElement | null>(null);
-  const [bar, setBar] = useState<{ x: number; w: number } | null>(null);
-  useLayoutEffect(() => {
-    const measure = () => {
-      const el = boxRef.current?.querySelector<HTMLElement>('[aria-pressed="true"]');
-      if (el) setBar({ x: el.offsetLeft, w: el.offsetWidth });
-    };
-    measure();
-    window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
-  }, [value, options.length]);
-  return (
-    <div ref={boxRef} className="utabs" role="group" aria-label={label}>
-      {options.map((o) => (
-        <button key={o.value} type="button" className="utab" aria-pressed={o.value === value} onClick={() => onChange(o.value)}>
-          {o.label}
-          {o.count !== undefined ? <span className="utab-count">{o.count}</span> : null}
-        </button>
-      ))}
-      {bar ? <span className="utabs-bar" style={cssVars({ '--x': `${bar.x}px`, '--w': `${bar.w}px` })} aria-hidden="true" /> : null}
-    </div>
-  );
-}
 
 // ---------------------------------------------------------------------------
 // Louros desenhados (um ramo; o outro lado é espelhado)
